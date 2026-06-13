@@ -7,12 +7,12 @@
 
     <view class="form-item">
       <text class="label">收件人手机号 *</text>
-      <input class="input" type="number" placeholder="请输入手机号" value="{{form.recipientPhone}}" bindinput="onInput" data-field="recipientPhone" />
+      <input class="input" type="number" placeholder="请输入11位手机号" value="{{form.recipientPhone}}" bindinput="onInput" data-field="recipientPhone" />
     </view>
 
     <view class="form-item">
       <text class="label">货架位置 *</text>
-      <input class="input" placeholder="例如：A-01" value="{{form.shelfNo}}" bindinput="onInput" data-field="shelfNo" />
+      <input class="input" placeholder="清输入货架位置" value="{{form.shelfNo}}" bindinput="onInput" data-field="shelfNo" />
     </view>
 
     <button class="btn-submit" bindtap="submit">{{isEdit ? '保存修改' : '添加快递'}}</button>

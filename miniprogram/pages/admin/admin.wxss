@@ -78,7 +78,7 @@
     margin-top: 20rpx;
   }
   
-  .btn-edit, .btn-delete {
+  .btn-edit, .btn-delete, .btn-notify {
     flex: 1;
     font-size: 28rpx;
     border-radius: 12rpx;
@@ -98,4 +98,48 @@
     text-align: center;
     padding: 100rpx;
     color: #999;
+  }
+  
+  .dashboard {
+    display: flex;
+    justify-content: space-around;
+    margin: 20rpx;
+    padding: 30rpx;
+    background: #fff;
+    border-radius: 16rpx;
+  }
+  
+  /* 重点修改的搜索框样式 */
+  .search-box {
+    margin: 20rpx;
+    background: white;
+    padding: 10rpx 10rpx 10rpx 20rpx;
+    border-radius: 50rpx;
+    display: flex;
+    align-items: center;
+    gap: 10rpx;
+  }
+  
+  .search-selector {
+    width: 120rpx;
+    border-right: 1rpx solid #eee;
+    padding-right: 10rpx;
+  }
+  
+  .selector-text {
+    font-size: 26rpx;
+    color: #666;
+    text-align: center;
+  }
+  
+  .search-input {
+    flex: 1;
+    font-size: 28rpx;
+    padding: 10rpx 0;
+    margin-left: 10rpx;
+  }
+  
+  .btn-notify {
+    background-color: #ff9f43; /* 醒目的橙色 */
+    color: white;
   }

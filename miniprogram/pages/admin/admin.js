@@ -5,7 +5,12 @@ Page({
   data: {
     list: [],
     currentTab: 0,
-    isAuthorized: false // 增加一个状态标识
+    isAuthorized: false, // 增加一个状态标识
+    allList: [], // 存储从云数据库拉取的全部原始数据
+    countWaiting: 0,
+    countToday: 0,
+    searchTypes: ['手机号', '取件码'], // 下拉选项
+    searchTypeIndex: 0
   },
 
   onShow() {
@@ -42,6 +47,42 @@ Page({
     })
   },
 
+  // 搜索触发函数
+  onSearchInput(e) {
+    const keyword = e.detail.value.trim();
+    // 如果没有关键字，恢复全量数据
+    if (!keyword) {
+      this.setData({ list: this.data.allList });
+      return;
+    }
+  
+    // 获取当前选中的搜索类型
+    const searchType = this.data.searchTypes[this.data.searchTypeIndex];
+    // 根据类型过滤
+    const filtered = this.data.allList.filter(item => {
+      if (searchType === '手机号') {
+        return String(item.recipientPhone).includes(keyword);
+      } else if (searchType === '取件码') {
+        return String(item.trackingCode).includes(keyword);
+      }
+      return false;
+    });
+    this.setData({ list: filtered });
+  },
+
+  sendSMS(e) {
+    const phone = e.currentTarget.dataset.phone;
+    wx.showModal({
+      title: '模拟发送短信',
+      content: `即将发送通知给 ${phone}，是否确认？`,
+      success: (res) => {
+        if (res.confirm) {
+          wx.showToast({ title: '提醒已发送', icon: 'success' });
+        }
+      }
+    });
+  },
+  
   switchTab(e) {
     const tab = parseInt(e.currentTarget.dataset.tab)
     this.setData({ currentTab: tab })
@@ -69,13 +110,53 @@ Page({
         return { ...item, createTimeFormatted }
       })
       
-      this.setData({ list })
+      this.setData({
+          list: list,      // 页面显示用
+          allList: list    // 备份一份，搜索时永远从这里过滤
+        })
+      this.getStatistics()
     } catch (err) {
       console.error(err)
       wx.showToast({ title: '加载失败', icon: 'none' })
     } finally {
       wx.hideLoading()
     }
+  },
+
+  // 切换搜索类型
+  onSearchTypeChange(e) {
+    this.setData({
+      searchTypeIndex: e.detail.value
+    });
+    // 切换后重新触发搜索（如果有输入内容）
+    const searchInput = wx.createSelectorQuery().select('.search-input');
+    searchInput.fields({ value: true }, res => {
+      if (res.value) {
+        this.onSearchInput({ detail: { value: res.value } });
+      }
+    }).exec();
+  },
+  
+  async getStatistics() {
+    // 获取云端全部数据
+    const res = await db.collection('parcels').get();
+    const allData = res.data;
+    
+    const now = new Date();
+    
+    const countWaiting = allData.filter(i => i.status === 0).length;
+    
+    const countToday = allData.filter(i => {
+      // 确保 i.createTime 存在
+      if (!i.createTime) return false;
+      const d = new Date(i.createTime);
+      // 判断年、月、日是否相等
+      return d.getFullYear() === now.getFullYear() && 
+             d.getMonth() === now.getMonth() && 
+             d.getDate() === now.getDate();
+    }).length;
+  
+    this.setData({ countWaiting, countToday });
   },
 
   goToAdd() {

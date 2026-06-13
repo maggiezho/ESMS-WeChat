@@ -1,7 +1,31 @@
+<view class="dashboard">
+  <view class="card">
+    <text class="label">待取件</text>
+    <text class="value">{{countWaiting}}</text>
+  </view>
+  <view class="card">
+    <text class="label">今日入库</text>
+    <text class="value">{{countToday}}</text>
+  </view>
+</view>
+
 <view class="container">
   <!-- 操作按钮 -->
   <view class="action-bar">
     <button class="btn-add" bindtap="goToAdd">+ 添加快递</button>
+  </view>
+
+  <!-- 改造后的搜索框 -->
+  <view class="search-box">
+    <view class="search-selector">
+      <picker mode="selector" range="{{searchTypes}}" bindchange="onSearchTypeChange" value="{{searchTypeIndex}}">
+        <view class="selector-text">
+          {{searchTypes[searchTypeIndex]}}
+          <text class="arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+    <input placeholder="请输入搜索内容" bindinput="onSearchInput" class="search-input" />
   </view>
 
   <!-- 筛选Tab -->
@@ -37,6 +61,7 @@
         <view class="card-actions">
           <button class="btn-edit" data-id="{{item._id}}" bindtap="editParcel">编辑</button>
           <button class="btn-delete" data-id="{{item._id}}" bindtap="deleteParcel">删除</button>
+          <button class="btn-notify" data-phone="{{item.recipientPhone}}" bindtap="sendSMS">提醒</button>
         </view>
       </view>
     </block>
