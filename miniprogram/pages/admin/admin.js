@@ -26,19 +26,31 @@ Page({
   checkPassword() {
     wx.showModal({
       title: '管理员验证',
-      content: '',
-      editable: true, // 开启输入框
+      editable: true,
       placeholderText: '请输入密码',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          // 这里设置你的课设密码，例如 123456
-          if (res.content === '123456') {
-            this.setData({ isAuthorized: true });
-            this.loadData();
-          } else {
-            wx.showToast({ title: '密码错误', icon: 'error' });
-            // 密码错误返回首页或重试
-            setTimeout(() => { wx.switchTab({ url: '/pages/index/index' }) }, 1000);
+          wx.showLoading({ title: '校验中...' })
+          
+          try {
+            // 调用云函数
+            const result = await wx.cloud.callFunction({
+              name: 'checkAdmin',
+              data: { password: res.content }
+            })
+            
+            wx.hideLoading()
+            
+            if (result.result.success) {
+              this.setData({ isAuthorized: true });
+              this.loadData();
+            } else {
+              wx.showToast({ title: '密码错误', icon: 'error' });
+              setTimeout(() => { wx.switchTab({ url: '/pages/index/index' }) }, 1000);
+            }
+          } catch (err) {
+            wx.hideLoading()
+            wx.showToast({ title: '网络错误', icon: 'none' })
           }
         } else if (res.cancel) {
           wx.switchTab({ url: '/pages/index/index' });
