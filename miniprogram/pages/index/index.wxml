@@ -1,0 +1,37 @@
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <text class="title">待取快递</text>
+    <text class="count">共{{list.length}}件</text>
+  </view>
+
+  <!-- 快递列表 -->
+  <view class="parcel-list">
+    <block wx:for="{{list}}" wx:key="_id">
+      <view class="parcel-card">
+        <view class="card-header">
+          <text class="tracking-code">取件码：{{item.trackingCode}}</text>
+          <text class="status status-waiting">待取</text>
+        </view>
+        <view class="card-body">
+          <view class="info-row">
+            <text class="label">货架位置：</text>
+            <text class="value">{{item.shelfNo}}</text>
+          </view>
+          <view class="info-row">
+            <text class="label">入库时间：</text>
+            <text class="value">{{item.createTimeFormatted}}</text>
+          </view>
+        </view>
+        <button class="btn-take" data-id="{{item._id}}" data-code="{{item.trackingCode}}" bindtap="scanToTake">
+          扫码取件
+        </button>
+      </view>
+    </block>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{list.length === 0}}" class="empty-state">
+    <text>暂无待取快递</text>
+  </view>
+</view>

@@ -1,0 +1,31 @@
+{
+    "pages": [
+      "pages/index/index",
+      "pages/history/history", 
+      "pages/admin/admin",
+      "pages/add/add"
+    ],
+    "window": {
+      "navigationBarBackgroundColor": "#07c160",
+      "navigationBarTitleText": "快递驿站",
+      "navigationBarTextStyle": "white"
+    },
+    "tabBar": {
+      "list": [
+        {
+          "pagePath": "pages/index/index",
+          "text": "待取列表"
+        },
+        {
+          "pagePath": "pages/history/history",
+          "text": "历史记录"
+        },
+        {
+          "pagePath": "pages/admin/admin",
+          "text": "管理"
+        }
+      ]
+    },
+    "style": "v2",
+    "sitemapLocation": "sitemap.json"
+  }
