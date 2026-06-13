@@ -4,11 +4,42 @@ const db = wx.cloud.database()
 Page({
   data: {
     list: [],
-    currentTab: 0
+    currentTab: 0,
+    isAuthorized: false // 增加一个状态标识
   },
 
   onShow() {
-    this.loadData()
+    // 只有在已授权的情况下才自动加载数据
+    if (this.data.isAuthorized) {
+      this.loadData();
+    } else {
+      this.checkPassword();
+    }
+  },
+
+  // 密码校验逻辑
+  checkPassword() {
+    wx.showModal({
+      title: '管理员验证',
+      content: '',
+      editable: true, // 开启输入框
+      placeholderText: '请输入密码',
+      success: (res) => {
+        if (res.confirm) {
+          // 这里设置你的课设密码，例如 123456
+          if (res.content === '123456') {
+            this.setData({ isAuthorized: true });
+            this.loadData();
+          } else {
+            wx.showToast({ title: '密码错误', icon: 'error' });
+            // 密码错误返回首页或重试
+            setTimeout(() => { wx.switchTab({ url: '/pages/index/index' }) }, 1000);
+          }
+        } else if (res.cancel) {
+          wx.switchTab({ url: '/pages/index/index' });
+        }
+      }
+    })
   },
 
   switchTab(e) {
