@@ -8,6 +8,7 @@ Page({
     isAuthorized: false,
     allList: [],
     countWaiting: 0,
+    countAll: 0,
     countToday: 0,
     searchTypes: ['手机号', '取件码'],
     searchTypeIndex: 0
