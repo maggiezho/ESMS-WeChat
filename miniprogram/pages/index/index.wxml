@@ -1,4 +1,11 @@
 <view class="container">
+  <!-- 手机号查询区域 -->
+  <view class="search-area">
+    <input class="phone-input" placeholder="请输入收件人手机号" 
+           value="{{phoneNum}}" bindinput="onPhoneInput" type="number" maxlength="11" />
+    <view class="search-btn" bindtap="searchParcels">查询</view>
+  </view>
+
   <!-- 头部 -->
   <view class="header">
     <text class="title">待取快递</text>
@@ -31,7 +38,10 @@
   </view>
 
   <!-- 空状态 -->
-  <view wx:if="{{list.length === 0}}" class="empty-state">
-    <text>暂无待取快递</text>
+  <view wx:if="{{list.length === 0 && hasSearched}}" class="empty-state">
+    <text>该手机号暂无待取快递</text>
+  </view>
+  <view wx:elif="{{list.length === 0 && !hasSearched}}" class="empty-state">
+    <text>请输入手机号查询待取件</text>
   </view>
 </view>
