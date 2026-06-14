@@ -1,21 +1,21 @@
-<view class="dashboard">
-  <view class="card">
-    <text class="label">待取件</text>
-    <text class="value">{{countWaiting}}</text>
-  </view>
-  <view class="card">
-    <text class="label">今日入库</text>
-    <text class="value">{{countToday}}</text>
-  </view>
-</view>
-
-<view class="container">
-  <!-- 操作按钮 -->
-  <view class="action-bar">
-    <button class="btn-add" bindtap="goToAdd">+ 添加快递</button>
+  <view class="dashboard">
+    <view class="card">
+        <text class="label">今日入库</text>
+        <text class="value">{{countTodayIn}}</text>
+    </view>
+    <view class="card">
+        <text class="label">今日取件</text>
+        <text class="value">{{countTodayOut}}</text>
+    </view>
   </view>
 
-  <!-- 改造后的搜索框 -->
+  <view class="container">
+    <view class="action-bar">
+        <button class="btn-scan-add" bindtap="adminScanAdd">扫码入库</button>
+        <button class="btn-add" bindtap="goToAdd">添加快递</button>
+        <button class="btn-scan-take" bindtap="adminScanTake">扫码取件</button>
+  </view>
+
   <view class="search-box">
     <view class="search-selector">
       <picker mode="selector" range="{{searchTypes}}" bindchange="onSearchTypeChange" value="{{searchTypeIndex}}">
@@ -30,11 +30,14 @@
 
   <!-- 筛选Tab -->
   <view class="tabs">
-    <view class="tab {{currentTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-tab="0">待取件</view>
-    <view class="tab {{currentTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-tab="1">全部快递</view>
+    <view class="tab {{currentTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-tab="0">
+        待取件({{countWaiting}})
+    </view>
+    <view class="tab {{currentTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-tab="1">
+        全部快递({{countAll}})
+    </view>
   </view>
 
-  <!-- 快递列表 -->
   <view class="parcel-list">
     <block wx:for="{{list}}" wx:key="_id">
       <view class="parcel-card">
@@ -57,8 +60,13 @@
             <text class="label">入库时间：</text>
             <text class="value">{{item.createTimeFormatted}}</text>
           </view>
+          <view class="info-row" wx:if="{{item.status === 1 && item.takeTime}}">
+            <text class="label">取件时间：</text>
+            <text class="value">{{item.takeTimeFormatted}}</text>
+          </view>
         </view>
-        <view class="card-actions">
+    
+        <view class="card-actions" wx:if="{{item.status === 0}}">
           <button class="btn-edit" data-id="{{item._id}}" bindtap="editParcel">编辑</button>
           <button class="btn-delete" data-id="{{item._id}}" bindtap="deleteParcel">删除</button>
           <button class="btn-notify" data-phone="{{item.recipientPhone}}" bindtap="sendSMS">提醒</button>

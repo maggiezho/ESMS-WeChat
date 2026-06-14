@@ -1,19 +1,39 @@
 /* pages/admin/admin.wxss */
-.container {
+  .container {
     min-height: 100vh;
     background-color: #f5f5f5;
     padding: 20rpx;
   }
   
   .action-bar {
+    display: flex;
+    gap: 20rpx;
     margin-bottom: 20rpx;
+  }
+  
+  .btn-add, .btn-scan-take, .btn-scan-add {
+    flex: 1;
+    font-size: 28rpx;
+    border-radius: 12rpx;
+    height: 80rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .btn-scan-add {
+    background-color: #ff9f43;
+    color: white;
+  }
+  
+  .btn-scan-take {
+    background-color: #1890ff;
+    color: white;
   }
   
   .btn-add {
     background-color: #07c160;
     color: white;
-    font-size: 30rpx;
-    border-radius: 12rpx;
   }
   
   .tabs {
@@ -140,6 +160,6 @@
   }
   
   .btn-notify {
-    background-color: #ff9f43; /* 醒目的橙色 */
+    background-color: #ff9f43;
     color: white;
   }

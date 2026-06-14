@@ -2,19 +2,43 @@
   <view class="form">
     <view class="form-item">
       <text class="label">取件码 *</text>
-      <input class="input" placeholder="请输入取件码" value="{{form.trackingCode}}" bindinput="onInput" data-field="trackingCode" />
+      <input class="input {{isValidated && (isValid ? 'valid-input' : 'invalid-input')}}" 
+             placeholder="格式：货架号-层数(1-5)-四位码（如：53-4-2001）" 
+             value="{{form.trackingCode}}" 
+             bindinput="onInput" 
+             bindblur="onTrackingCodeBlur"
+             data-field="trackingCode" />
+      
+      <!-- 校验提示：只在失焦后显示 -->
+      <text class="hint {{isValid ? 'hint-success' : 'hint-error'}}" wx:if="{{showValidation && validationMsg}}">
+        {{validationMsg}}
+      </text>
+      
+      <!-- 未输入时的提示 -->
+      <text class="format-tip" wx:if="{{!showValidation && !form.trackingCode}}">
+        💡 示例：53-4-2001（货架53-4层，取件码2001）
+      </text>
     </view>
 
     <view class="form-item">
       <text class="label">收件人手机号 *</text>
-      <input class="input" type="number" placeholder="请输入11位手机号" value="{{form.recipientPhone}}" bindinput="onInput" data-field="recipientPhone" />
+      <input class="input {{phoneValidated && !isPhoneValid ? 'invalid-input' : (phoneValidated && isPhoneValid ? 'valid-input' : '')}}" 
+             type="number" 
+             placeholder="请输入11位手机号" 
+             value="{{form.recipientPhone}}" 
+             bindinput="onPhoneInput" 
+             bindblur="onPhoneBlur"
+             data-field="recipientPhone" 
+             maxlength="11" />
+      
+      <!-- 手机号校验提示 -->
+      <text class="hint hint-error" wx:if="{{showPhoneValidation && !isPhoneValid && form.recipientPhone}}">
+        ✗ 手机号必须是11位数字
+      </text>
     </view>
 
-    <view class="form-item">
-      <text class="label">货架位置 *</text>
-      <input class="input" placeholder="清输入货架位置" value="{{form.shelfNo}}" bindinput="onInput" data-field="shelfNo" />
-    </view>
-
-    <button class="btn-submit" bindtap="submit">{{isEdit ? '保存修改' : '添加快递'}}</button>
+    <button class="btn-submit" bindtap="submit" disabled="{{(form.trackingCode && !isValid) || (form.recipientPhone && !isPhoneValid)}}">
+      {{isEdit ? '保存修改' : '添加快递'}}
+    </button>
   </view>
 </view>
