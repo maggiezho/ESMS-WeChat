@@ -10,14 +10,22 @@
       "navigationBarTextStyle": "white"
     },
     "tabBar": {
+      "color": "#999999",
+      "selectedColor": "#07c160",
+      "backgroundColor": "#ffffff",
+      "borderStyle": "black",
       "list": [
         {
           "pagePath": "pages/index/index",
-          "text": "快递查询"
+          "text": "快递查询",
+          "iconPath": "images/query.png",
+          "selectedIconPath": "images/query-active.png"
         },
         {
           "pagePath": "pages/admin/admin",
-          "text": "管理"
+          "text": "管理",
+          "iconPath": "images/admin.png",
+          "selectedIconPath": "images/admin-active.png"
         }
       ]
     },

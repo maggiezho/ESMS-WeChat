@@ -25,7 +25,10 @@
         </view>
       </picker>
     </view>
-    <input placeholder="请输入搜索内容" bindinput="onSearchInput" class="search-input" />
+    <input placeholder="请输入搜索内容" bindinput="onSearchInput" class="search-input" value="{{searchKeyword}}" />
+    <view class="clear-btn" wx:if="{{searchKeyword}}" catchtap="clearSearch">
+        <text>✕</text>
+    </view>
   </view>
 
   <!-- 筛选Tab -->
@@ -67,9 +70,9 @@
         </view>
     
         <view class="card-actions" wx:if="{{item.status === 0}}">
+          <button class="btn-notify" data-phone="{{item.recipientPhone}}" bindtap="sendSMS">提醒</button>
           <button class="btn-edit" data-id="{{item._id}}" bindtap="editParcel">编辑</button>
           <button class="btn-delete" data-id="{{item._id}}" bindtap="deleteParcel">删除</button>
-          <button class="btn-notify" data-phone="{{item.recipientPhone}}" bindtap="sendSMS">提醒</button>
         </view>
       </view>
     </block>

@@ -34,6 +34,18 @@ Page({
     this.loadAllData(phone)
   },
 
+  // 清除手机号输入
+  clearPhoneInput() {
+    this.setData({
+      phoneNum: '',
+      hasSearched: false,
+      waitingList: [],
+      historyList: [],
+      waitingCount: 0,
+      historyCount: 0
+    })
+  },
+
   // 一次性加载待取和历史
   async loadAllData(phone) {
     wx.showLoading({ title: '加载中...' })

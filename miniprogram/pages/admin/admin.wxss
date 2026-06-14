@@ -22,17 +22,17 @@
   }
   
   .btn-scan-add {
-    background-color: #ff9f43;
-    color: white;
-  }
-  
-  .btn-scan-take {
     background-color: #1890ff;
     color: white;
   }
   
-  .btn-add {
+  .btn-scan-take {
     background-color: #07c160;
+    color: white;
+  }
+  
+  .btn-add {
+    background-color: #3b5998;
     color: white;
   }
   
@@ -138,6 +138,7 @@
     display: flex;
     align-items: center;
     gap: 10rpx;
+    position: relative;
   }
   
   .search-selector {
@@ -157,6 +158,26 @@
     font-size: 28rpx;
     padding: 10rpx 0;
     margin-left: 10rpx;
+  }
+  
+  /* 清除按钮样式 */
+  .clear-btn {
+    flex-shrink: 0;
+    width: 48rpx;
+    height: 48rpx;
+    background: #ccc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28rpx;
+    cursor: pointer;
+    margin-right: 10rpx;
+  }
+  
+  .clear-btn:active {
+    background: #999;
   }
   
   .btn-notify {

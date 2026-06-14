@@ -11,7 +11,8 @@ Page({
     countAll: 0,
     countToday: 0,
     searchTypes: ['手机号', '取件码'],
-    searchTypeIndex: 0
+    searchTypeIndex: 0,
+    searchKeyword: ''
   },
 
   onShow() {
@@ -263,21 +264,31 @@ Page({
 
   onSearchInput(e) {
     const keyword = e.detail.value.trim();
+    this.setData({ searchKeyword: e.detail.value });  // 👈 保存关键词
+    
     if (!keyword) {
-      this.setData({ list: this.data.allList });
-      return;
+        this.setData({ list: this.data.allList });
+        return;
     }
   
     const searchType = this.data.searchTypes[this.data.searchTypeIndex];
     const filtered = this.data.allList.filter(item => {
-      if (searchType === '手机号') {
-        return String(item.recipientPhone).includes(keyword);
-      } else if (searchType === '取件码') {
-        return String(item.trackingCode).includes(keyword);
-      }
-      return false;
+        if (searchType === '手机号') {
+            return String(item.recipientPhone).includes(keyword);
+        } else if (searchType === '取件码') {
+            return String(item.trackingCode).includes(keyword);
+        }
+        return false;
     });
     this.setData({ list: filtered });
+  },
+
+  // 清除搜索
+  clearSearch() {
+    this.setData({
+        searchKeyword: '',
+        list: this.data.allList
+    });
   },
 
   sendSMS(e) {

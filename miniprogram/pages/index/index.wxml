@@ -1,9 +1,19 @@
-<view class="container">
-  <!-- 手机号查询区域 -->
-  <view class="search-area">
-    <input class="phone-input" placeholder="请输入收件人手机号" 
-           value="{{phoneNum}}" bindinput="onPhoneInput" type="number" maxlength="11" />
-    <view class="search-btn" bindtap="searchParcels">查询</view>
+  <view class="container">
+    <!-- 页面装饰头部 -->
+    <view class="page-header">
+        <image class="header-icon" src="/images/express.png" mode="aspectFit"></image>
+        <text class="header-title">快递驿站</text>
+        <text class="header-subtitle">扫码取件，轻松便捷</text>
+    </view>
+    <!-- 手机号查询区域 -->
+    <view class="search-area">
+        <input class="phone-input" placeholder="请输入收件人手机号" 
+            value="{{phoneNum}}" bindinput="onPhoneInput" type="number" maxlength="11" />
+        <!-- 清除按钮：只在有内容时显示 -->
+        <view class="clear-btn" wx:if="{{phoneNum}}" catchtap="clearPhoneInput">
+            <text>✕</text>
+        </view>
+        <view class="search-btn" bindtap="searchParcels">查询</view>
   </view>
 
   <!-- 新增：Tab 切换 -->
@@ -64,14 +74,23 @@
     </block>
   </view>
 
-  <!-- 空状态 -->
-  <view wx:if="{{hasSearched && currentTab === 0 && waitingList.length === 0}}" class="empty-state">
-    <text>该手机号暂无待取快递</text>
-  </view>
-  <view wx:if="{{hasSearched && currentTab === 1 && historyList.length === 0}}" class="empty-state">
-    <text>该手机号暂无历史记录</text>
-  </view>
+  <!-- 空状态：未查询时 -->
   <view wx:elif="{{!hasSearched}}" class="empty-state">
-    <text>请输入手机号查询</text>
+    <image class="empty-icon" src="/images/empty-search.png" mode="aspectFit"></image>
+    <text class="empty-text">请输入手机号查询快递</text>
+    <text class="empty-desc">输入收件人手机号，查看待取件</text>
+  </view>
+
+  <!-- 空状态：查询后无结果 -->
+  <view wx:if="{{hasSearched && currentTab === 0 && waitingList.length === 0}}" class="empty-state">
+    <image class="empty-icon" src="/images/empty-box.png" mode="aspectFit"></image>
+    <text class="empty-text">暂无待取快递</text>
+    <text class="empty-desc">该手机号没有待取包裹</text>
+  </view>
+
+  <view wx:if="{{hasSearched && currentTab === 1 && historyList.length === 0}}" class="empty-state">
+    <image class="empty-icon" src="/images/empty-history.png" mode="aspectFit"></image>
+    <text class="empty-text">暂无历史记录</text>
+    <text class="empty-desc">该手机号还没有取件记录</text>
   </view>
 </view>
