@@ -3,25 +3,24 @@ const db = wx.cloud.database()
 
 Page({
   data: {
-    phoneNum: '',        // 输入的手机号
-    list: [],            // 快递列表
-    hasSearched: false   // 是否查询过（用于区分首次加载空状态）
+    phoneNum: '',
+    hasSearched: false,
+    currentTab: 0,           // 0:待取 1:历史
+    waitingList: [],         // 待取列表
+    historyList: [],         // 历史列表
+    waitingCount: 0,
+    historyCount: 0
   },
 
-  onShow() {
-    // 可选：页面每次显示时清空搜索（看需求）
-    // 这里注释掉，保留上次搜索结果
-    // this.setData({ phoneNum: '', list: [], hasSearched: false })
-  },
-
-  // 监听手机号输入
   onPhoneInput(e) {
-    this.setData({
-      phoneNum: e.detail.value
-    })
+    this.setData({ phoneNum: e.detail.value })
   },
 
-  // 查询按钮点击
+  switchTab(e) {
+    const tab = parseInt(e.currentTarget.dataset.tab)
+    this.setData({ currentTab: tab })
+  },
+
   searchParcels() {
     const phone = this.data.phoneNum.trim()
     if (!phone) {
@@ -32,63 +31,73 @@ Page({
       wx.showToast({ title: '手机号格式不正确', icon: 'none' })
       return
     }
-    this.loadParcels(phone)
+    this.loadAllData(phone)
   },
 
-  // 根据手机号加载待取快递（status=0）
-  async loadParcels(phone) {
+  // 一次性加载待取和历史
+  async loadAllData(phone) {
     wx.showLoading({ title: '加载中...' })
     this.setData({ hasSearched: true })
 
     try {
-      const res = await db.collection('parcels')
-        .where({
-          status: 0,
-          recipientPhone: phone   // 关键：按手机号筛选
-        })
-        .orderBy('createTime', 'desc')
-        .get()
+      // 并行查询两个集合（实际是一个表，不同状态）
+      const [waitingRes, historyRes] = await Promise.all([
+        db.collection('parcels')
+          .where({ status: 0, recipientPhone: phone })
+          .orderBy('createTime', 'desc')
+          .get(),
+        db.collection('parcels')
+          .where({ status: 1, recipientPhone: phone })
+          .orderBy('takeTime', 'desc')
+          .get()
+      ])
 
-      console.log('查询结果数量：', res.data.length)
+      const formatTime = (date) => {
+        if (!date) return ''
+        const d = new Date(date)
+        return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`
+      }
 
-      const list = res.data.map(item => {
-        return {
-          ...item,
-          createTimeFormatted: this.formatTime(item.createTime)
-        }
+      const waitingList = waitingRes.data.map(item => ({
+        ...item,
+        createTimeFormatted: formatTime(item.createTime)
+      }))
+
+      const historyList = historyRes.data.map(item => ({
+        ...item,
+        takeTimeFormatted: formatTime(item.takeTime)
+      }))
+
+      this.setData({
+        waitingList,
+        historyList,
+        waitingCount: waitingList.length,
+        historyCount: historyList.length
       })
-
-      this.setData({ list })
     } catch (err) {
-      console.error('加载失败', err)
+      console.error(err)
       wx.showToast({ title: '加载失败', icon: 'none' })
     } finally {
       wx.hideLoading()
     }
   },
 
-  // 扫码取件（保持不变）
-  // 扫码取件
+  // 扫码取件（只在待取 Tab 使用）
   scanToTake(e) {
     const { id, code: expectedCode } = e.currentTarget.dataset
     wx.scanCode({
       success: (res) => {
         const scannedContent = res.result
-        const scannedCode = scannedContent.includes(' | ') ? scannedContent.split(' | ')[0] : scannedContent;
-
+        const scannedCode = scannedContent.includes(' | ') ? scannedContent.split(' | ')[0] : scannedContent
         if (scannedCode === expectedCode) {
           this.confirmTake(id, expectedCode)
         } else {
           wx.showToast({ title: '取件码不匹配', icon: 'error' })
         }
-      },
-      fail: () => {
-        wx.showToast({ title: '扫码失败', icon: 'none' })
       }
     })
   },
 
-  // 确认取件
   async confirmTake(id, code) {
     const result = await wx.showModal({
       title: '确认取件',
@@ -100,20 +109,14 @@ Page({
     wx.showLoading({ title: '处理中...' })
     try {
       await db.collection('parcels').doc(id).update({
-        data: {
-          status: 1,
-          takeTime: new Date()
-        }
+        data: { status: 1, takeTime: new Date() }
       })
       wx.showToast({ title: '取件成功', icon: 'success' })
-      // 取件成功后重新查询当前手机号的待取件
+      // 刷新数据
       if (this.data.phoneNum) {
-        this.loadParcels(this.data.phoneNum)
-      } else {
-        this.setData({ list: [] })
+        this.loadAllData(this.data.phoneNum)
       }
     } catch (err) {
-      console.error('取件失败', err)
       wx.showToast({ title: '取件失败', icon: 'error' })
     } finally {
       wx.hideLoading()

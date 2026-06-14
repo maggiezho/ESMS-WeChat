@@ -1,7 +1,6 @@
 {
     "pages": [
       "pages/index/index",
-      "pages/history/history", 
       "pages/admin/admin",
       "pages/add/add"
     ],
@@ -14,11 +13,7 @@
       "list": [
         {
           "pagePath": "pages/index/index",
-          "text": "待取列表"
-        },
-        {
-          "pagePath": "pages/history/history",
-          "text": "历史记录"
+          "text": "快递查询"
         },
         {
           "pagePath": "pages/admin/admin",

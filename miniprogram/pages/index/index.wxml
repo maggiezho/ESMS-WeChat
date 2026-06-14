@@ -6,15 +6,20 @@
     <view class="search-btn" bindtap="searchParcels">查询</view>
   </view>
 
-  <!-- 头部 -->
-  <view class="header">
-    <text class="title">待取快递</text>
-    <text class="count">共{{list.length}}件</text>
+  <!-- 新增：Tab 切换 -->
+  <view class="tabs">
+    <view class="tab {{currentTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-tab="0">
+      待取快递 ({{waitingCount}})
+    </view>
+    <view class="tab {{currentTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-tab="1">
+      历史记录 ({{historyCount}})
+    </view>
   </view>
 
-  <!-- 快递列表 -->
-  <view class="parcel-list">
-    <block wx:for="{{list}}" wx:key="_id">
+  <!-- 待取列表 -->
+  <view class="parcel-list" wx:if="{{currentTab === 0}}">
+    <block wx:for="{{waitingList}}" wx:key="_id">
+      <!-- 卡片内容保持不变，和你原来的 index.wxml 一样 -->
       <view class="parcel-card">
         <view class="card-header">
           <text class="tracking-code">取件码：{{item.trackingCode}}</text>
@@ -37,11 +42,36 @@
     </block>
   </view>
 
+  <!-- 历史列表 -->
+  <view class="parcel-list" wx:if="{{currentTab === 1}}">
+    <block wx:for="{{historyList}}" wx:key="_id">
+      <view class="parcel-card">
+        <view class="card-header">
+          <text class="tracking-code">取件码：{{item.trackingCode}}</text>
+          <text class="status status-done">已取</text>
+        </view>
+        <view class="card-body">
+          <view class="info-row">
+            <text class="label">货架位置：</text>
+            <text class="value">{{item.shelfNo}}</text>
+          </view>
+          <view class="info-row">
+            <text class="label">取件时间：</text>
+            <text class="value">{{item.takeTimeFormatted}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
   <!-- 空状态 -->
-  <view wx:if="{{list.length === 0 && hasSearched}}" class="empty-state">
+  <view wx:if="{{hasSearched && currentTab === 0 && waitingList.length === 0}}" class="empty-state">
     <text>该手机号暂无待取快递</text>
   </view>
-  <view wx:elif="{{list.length === 0 && !hasSearched}}" class="empty-state">
-    <text>请输入手机号查询待取件</text>
+  <view wx:if="{{hasSearched && currentTab === 1 && historyList.length === 0}}" class="empty-state">
+    <text>该手机号暂无历史记录</text>
+  </view>
+  <view wx:elif="{{!hasSearched}}" class="empty-state">
+    <text>请输入手机号查询</text>
   </view>
 </view>
