@@ -68,11 +68,15 @@ Page({
   },
 
   // 扫码取件（保持不变）
+  // 扫码取件
   scanToTake(e) {
     const { id, code: expectedCode } = e.currentTarget.dataset
     wx.scanCode({
       success: (res) => {
-        if (res.result === expectedCode) {
+        const scannedContent = res.result
+        const scannedCode = scannedContent.includes(' | ') ? scannedContent.split(' | ')[0] : scannedContent;
+
+        if (scannedCode === expectedCode) {
           this.confirmTake(id, expectedCode)
         } else {
           wx.showToast({ title: '取件码不匹配', icon: 'error' })
