@@ -1,4 +1,3 @@
-// pages/admin/admin.js
 const db = wx.cloud.database()
 
 Page({
@@ -9,7 +8,8 @@ Page({
     allList: [],
     countWaiting: 0,
     countAll: 0,
-    countToday: 0,
+    countTodayIn: 0,
+    countTodayOut: 0,
     searchTypes: ['手机号', '取件码'],
     searchTypeIndex: 0,
     searchKeyword: ''
@@ -23,6 +23,7 @@ Page({
     }
   },
 
+  // 管理员密码验证
   checkPassword() {
     wx.showModal({
       title: '管理员验证',
@@ -55,7 +56,7 @@ Page({
     })
   },
 
-  // ========== 管理员扫码取件（不变） ==========
+  // 管理员扫码取件
   async adminScanTake() {
     try {
       const scanRes = await wx.scanCode({
@@ -63,12 +64,10 @@ Page({
         scanType: ['qrCode', 'barCode']
       })
       
-      // 解析二维码内容：格式 "取件码 | 手机号"
       const qrContent = scanRes.result
       let trackingCode = qrContent
       let phoneNum = ''
       
-      // 尝试解析竖线分隔的格式
       if (qrContent.includes('|')) {
         const parts = qrContent.split('|')
         trackingCode = parts[0].trim()
@@ -77,12 +76,8 @@ Page({
       
       wx.showLoading({ title: '查询中...' })
       
-      // 根据取件码查询未取件的快递
       const res = await db.collection('parcels')
-        .where({
-          trackingCode: trackingCode,
-          status: 0
-        })
+        .where({ trackingCode: trackingCode, status: 0 })
         .get()
       
       wx.hideLoading()
@@ -90,7 +85,7 @@ Page({
       if (res.data.length === 0) {
         wx.showModal({
           title: '未找到快递',
-          content: `取件码 "${trackingCode}" 没有对应的待取快递，请确认是否正确。`,
+          content: `取件码 "${trackingCode}" 没有对应的待取快递`,
           showCancel: false
         })
         return
@@ -106,12 +101,8 @@ Page({
         const actionRes = await new Promise((resolve) => {
           wx.showActionSheet({
             itemList: items.map(item => item.label),
-            success: (result) => {
-              resolve(items[result.tapIndex])
-            },
-            fail: () => {
-              resolve(null)
-            }
+            success: (result) => { resolve(items[result.tapIndex]) },
+            fail: () => { resolve(null) }
           })
         })
         
@@ -129,11 +120,7 @@ Page({
       
       wx.showLoading({ title: '处理中...' })
       await db.collection('parcels').doc(parcelToTake._id).update({
-        data: {
-          status: 1,
-          takeTime: new Date(),
-          takenByAdmin: true
-        }
+        data: { status: 1, takeTime: new Date(), takenByAdmin: true }
       })
       
       wx.hideLoading()
@@ -149,10 +136,9 @@ Page({
     }
   },
 
-  // ========== 升级版：智能扫码入库（自动解析所有字段） ==========
+  // 扫码入库
   async adminScanAdd() {
     try {
-      // 1. 扫描二维码
       const scanRes = await wx.scanCode({
         onlyFromCamera: true,
         scanType: ['qrCode', 'barCode']
@@ -161,9 +147,6 @@ Page({
       const qrContent = scanRes.result
       console.log('扫描内容：', qrContent)
       
-      // 2. 解析二维码内容
-      // 格式：取件码 | 手机号
-      // 取件码格式：货架号-层数-四位码（如 53-4-2001）
       let trackingCode = ''
       let phoneNum = ''
       
@@ -172,20 +155,15 @@ Page({
         trackingCode = parts[0].trim()
         phoneNum = parts[1] ? parts[1].trim() : ''
       } else {
-        // 兼容只有取件码的情况
         trackingCode = qrContent.trim()
-        phoneNum = ''
       }
       
-      // 3. 从取件码解析出货架位置
-      // 取件码格式：货架号-层数-四位码（如 53-4-2001）
       const shelfNo = this.parseShelfNoFromTrackingCode(trackingCode)
       
       if (!shelfNo) {
-        // 如果无法自动解析，让管理员手动输入
         wx.showModal({
           title: '解析提示',
-          content: `取件码 "${trackingCode}" 格式不正确，无法自动识别货架位置。\n正确格式示例：53-4-2001\n将跳转到手动添加页面。`,
+          content: `取件码 "${trackingCode}" 格式不正确，将跳转到手动添加页面。`,
           showCancel: false,
           success: () => {
             this.goToAddWithData(trackingCode, phoneNum, '')
@@ -194,18 +172,14 @@ Page({
         return
       }
       
-      // 4. 检查是否已有相同取件码的未取快递
       const checkRes = await db.collection('parcels')
-        .where({
-          trackingCode: trackingCode,
-          status: 0
-        })
+        .where({ trackingCode: trackingCode, status: 0 })
         .get()
       
       if (checkRes.data.length > 0) {
         wx.showModal({
           title: '重复入库提示',
-          content: `取件码 ${trackingCode} 已有待取快递！\n货架位置：${checkRes.data[0].shelfNo}\n收件人：${checkRes.data[0].recipientPhone}\n是否仍要添加？（同一取件码一般不应重复）`,
+          content: `取件码 ${trackingCode} 已有待取快递！\n货架位置：${checkRes.data[0].shelfNo}\n收件人：${checkRes.data[0].recipientPhone}\n是否仍要添加？`,
           confirmText: '仍要添加',
           confirmColor: '#ff9f43',
           success: async (res) => {
@@ -217,7 +191,6 @@ Page({
         return
       }
       
-      // 5. 自动填充并跳转到添加页面
       this.goToAddWithData(trackingCode, phoneNum, shelfNo)
       
     } catch (err) {
@@ -228,69 +201,50 @@ Page({
     }
   },
 
-  // 从取件码解析货架位置
-  // 输入：53-4-2001 → 输出：53-4（货架号-层数）
+  // 解析货架位置
   parseShelfNoFromTrackingCode(trackingCode) {
     if (!trackingCode) return ''
-    
-    // 匹配格式：数字-数字-数字
     const pattern = /^(\d+)-(\d+)-(\d+)$/
     const match = trackingCode.match(pattern)
-    
-    if (match) {
-      // 返回 货架号-层数
-      return `${match[1]}-${match[2]}`
-    }
-    
-    return ''
+    return match ? `${match[1]}-${match[2]}` : ''
   },
 
-  // 跳转到添加页面并传递解析的数据
+  // 跳转到添加页面并传递数据
   goToAddWithData(trackingCode, phoneNum, shelfNo) {
     let url = `/pages/add/add?trackingCode=${encodeURIComponent(trackingCode)}`
-    
-    if (phoneNum) {
-      url += `&recipientPhone=${encodeURIComponent(phoneNum)}`
-    }
-    
-    if (shelfNo) {
-      url += `&shelfNo=${encodeURIComponent(shelfNo)}`
-    }
-    
+    if (phoneNum) url += `&recipientPhone=${encodeURIComponent(phoneNum)}`
+    if (shelfNo) url += `&shelfNo=${encodeURIComponent(shelfNo)}`
     url += `&fromScan=true`
-    
     wx.navigateTo({ url })
   },
 
+  // 搜索输入
   onSearchInput(e) {
     const keyword = e.detail.value.trim();
-    this.setData({ searchKeyword: e.detail.value });  // 👈 保存关键词
+    this.setData({ searchKeyword: e.detail.value });
     
     if (!keyword) {
-        this.setData({ list: this.data.allList });
-        return;
+      this.setData({ list: this.data.allList });
+      return;
     }
   
     const searchType = this.data.searchTypes[this.data.searchTypeIndex];
     const filtered = this.data.allList.filter(item => {
-        if (searchType === '手机号') {
-            return String(item.recipientPhone).includes(keyword);
-        } else if (searchType === '取件码') {
-            return String(item.trackingCode).includes(keyword);
-        }
-        return false;
+      if (searchType === '手机号') {
+        return String(item.recipientPhone).includes(keyword);
+      } else if (searchType === '取件码') {
+        return String(item.trackingCode).includes(keyword);
+      }
+      return false;
     });
     this.setData({ list: filtered });
   },
 
-  // 清除搜索
   clearSearch() {
-    this.setData({
-        searchKeyword: '',
-        list: this.data.allList
-    });
+    this.setData({ searchKeyword: '', list: this.data.allList });
   },
 
+  // 模拟短信提醒
   sendSMS(e) {
     const phone = e.currentTarget.dataset.phone;
     wx.showModal({
@@ -310,6 +264,7 @@ Page({
     this.loadData()
   },
 
+  // 数据加载
   async loadData() {
     wx.showLoading({ title: '加载中...' })
     
@@ -317,29 +272,24 @@ Page({
       const allRes = await db.collection('parcels').orderBy('createTime', 'desc').get();
       const allList = allRes.data;
       
-      // 定义格式化时间的辅助函数
       const formatTime = (time) => {
         if (!time) return '';
         const d = new Date(time);
         return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`;
       };
 
-      // 预处理所有数据（格式化时间）
       const formattedAllList = allList.map(item => ({
         ...item,
         createTimeFormatted: formatTime(item.createTime),
         takeTimeFormatted: formatTime(item.takeTime)
       }));
 
-      // 筛选待取件数据
       const formattedWaitingList = formattedAllList.filter(item => item.status === 0);
-      
-      // 根据当前 tab 决定渲染哪一份列表
       const displayList = (this.data.currentTab === 0) ? formattedWaitingList : formattedAllList;
       
       this.setData({
         list: displayList,
-        allList: formattedAllList, // 保存格式化后的完整数据，以便搜索过滤
+        allList: formattedAllList,
         countWaiting: formattedWaitingList.length,
         countAll: formattedAllList.length
       });
@@ -353,10 +303,9 @@ Page({
     }
   },
 
+  // 搜索类型切换
   onSearchTypeChange(e) {
-    this.setData({
-      searchTypeIndex: e.detail.value
-    });
+    this.setData({ searchTypeIndex: e.detail.value });
     const searchInput = wx.createSelectorQuery().select('.search-input');
     searchInput.fields({ value: true }, res => {
       if (res && res.value) {
@@ -365,21 +314,19 @@ Page({
     }).exec();
   },
   
-  // admin.js 中的 getStatistics 函数
+  // 获取统计数据
   async getStatistics() {
     const res = await db.collection('parcels').get();
     const allData = res.data;
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
   
-    // 统计今日入库：根据 createTime
     const countTodayIn = allData.filter(i => {
       if (!i.createTime) return false;
       const d = new Date(i.createTime);
       return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}` === todayStr;
     }).length;
   
-    // 统计今日取件：根据 takeTime
     const countTodayOut = allData.filter(i => {
       if (!i.takeTime) return false;
       const d = new Date(i.takeTime);
@@ -390,18 +337,16 @@ Page({
   },
 
   goToAdd() {
-    wx.navigateTo({
-      url: '/pages/add/add'
-    })
+    wx.navigateTo({ url: '/pages/add/add' })
   },
 
+  // 编辑信息
   editParcel(e) {
     const id = e.currentTarget.dataset.id
-    wx.navigateTo({
-      url: `/pages/add/add?id=${id}`
-    })
+    wx.navigateTo({ url: `/pages/add/add?id=${id}` })
   },
 
+  // 删除信息
   async deleteParcel(e) {
     const id = e.currentTarget.dataset.id
     

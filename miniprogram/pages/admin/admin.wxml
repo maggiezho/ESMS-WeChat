@@ -1,11 +1,11 @@
   <view class="dashboard">
     <view class="card">
         <text class="label">今日入库</text>
-        <text class="value">{{countTodayIn}}</text>
+        <text class="value"> {{countTodayIn}}</text>
     </view>
     <view class="card">
         <text class="label">今日取件</text>
-        <text class="value">{{countTodayOut}}</text>
+        <text class="value"> {{countTodayOut}}</text>
     </view>
   </view>
 
@@ -31,7 +31,6 @@
     </view>
   </view>
 
-  <!-- 筛选Tab -->
   <view class="tabs">
     <view class="tab {{currentTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-tab="0">
         待取件({{countWaiting}})

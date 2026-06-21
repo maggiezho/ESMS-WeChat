@@ -1,13 +1,12 @@
-// pages/index/index.js
 const db = wx.cloud.database()
 
 Page({
   data: {
     phoneNum: '',
     hasSearched: false,
-    currentTab: 0,           // 0:待取 1:历史
-    waitingList: [],         // 待取列表
-    historyList: [],         // 历史列表
+    currentTab: 0,
+    waitingList: [],
+    historyList: [],
     waitingCount: 0,
     historyCount: 0
   },
@@ -21,6 +20,7 @@ Page({
     this.setData({ currentTab: tab })
   },
 
+  // 查询快递
   searchParcels() {
     const phone = this.data.phoneNum.trim()
     if (!phone) {
@@ -34,7 +34,6 @@ Page({
     this.loadAllData(phone)
   },
 
-  // 清除手机号输入
   clearPhoneInput() {
     this.setData({
       phoneNum: '',
@@ -46,13 +45,12 @@ Page({
     })
   },
 
-  // 一次性加载待取和历史
+  // 加载待取和历史列表
   async loadAllData(phone) {
     wx.showLoading({ title: '加载中...' })
     this.setData({ hasSearched: true })
 
     try {
-      // 并行查询两个集合（实际是一个表，不同状态）
       const [waitingRes, historyRes] = await Promise.all([
         db.collection('parcels')
           .where({ status: 0, recipientPhone: phone })
@@ -94,7 +92,7 @@ Page({
     }
   },
 
-  // 扫码取件（只在待取 Tab 使用）
+  // 扫码取件
   scanToTake(e) {
     const { id, code: expectedCode } = e.currentTarget.dataset
     wx.scanCode({
@@ -110,6 +108,7 @@ Page({
     })
   },
 
+  // 确认取件
   async confirmTake(id, code) {
     const result = await wx.showModal({
       title: '确认取件',
@@ -124,7 +123,6 @@ Page({
         data: { status: 1, takeTime: new Date() }
       })
       wx.showToast({ title: '取件成功', icon: 'success' })
-      // 刷新数据
       if (this.data.phoneNum) {
         this.loadAllData(this.data.phoneNum)
       }
@@ -135,7 +133,6 @@ Page({
     }
   },
 
-  // 格式化时间（保持不变）
   formatTime(date) {
     if (!date) return ''
     const d = new Date(date)

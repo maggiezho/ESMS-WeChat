@@ -3,20 +3,15 @@
     <view class="form-item">
       <text class="label">取件码 *</text>
       <input class="input {{isValidated && (isValid ? 'valid-input' : 'invalid-input')}}" 
-             placeholder="格式：货架号-层数(1-5)-四位码（如：53-4-2001）" 
+             placeholder="格式：货架号-层数(1-5)--四位码" 
              value="{{form.trackingCode}}" 
              bindinput="onInput" 
              bindblur="onTrackingCodeBlur"
              data-field="trackingCode" />
       
-      <!-- 校验提示：只在失焦后显示 -->
+      <!-- 校验提示只在失焦后显示 -->
       <text class="hint {{isValid ? 'hint-success' : 'hint-error'}}" wx:if="{{showValidation && validationMsg}}">
         {{validationMsg}}
-      </text>
-      
-      <!-- 未输入时的提示 -->
-      <text class="format-tip" wx:if="{{!showValidation && !form.trackingCode}}">
-        💡 示例：53-4-2001（货架53-4层，取件码2001）
       </text>
     </view>
 
@@ -33,7 +28,7 @@
       
       <!-- 手机号校验提示 -->
       <text class="hint hint-error" wx:if="{{showPhoneValidation && !isPhoneValid && form.recipientPhone}}">
-        ✗ 手机号必须是11位数字
+        × 手机号必须是11位数字
       </text>
     </view>
 

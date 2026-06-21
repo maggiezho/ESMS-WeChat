@@ -48,8 +48,6 @@
   background-color: rgba(0,0,0,0.1);
   width: 40%;
   text-align: center;
-  /* height: 90rpx; */
-  /* line-height: 90rpx; */
   border-radius: 10rpx;
   margin: 0 auto;
 }
